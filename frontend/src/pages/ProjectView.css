@@ -1,0 +1,53 @@
+/* Container */
+.project-container {
+  padding: 30px;
+}
+
+/* Title */
+.project-title {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+/* Card */
+.task-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+}
+
+.btn-start {
+  background: #2196f3;
+}
+
+.btn-complete {
+  background: #4caf50;
+}
+
+/* Status */
+.status {
+  font-weight: bold;
+}
+
+.status.todo {
+  color: orange;
+}
+
+.status.progress {
+  color: blue;
+}
+
+.status.done {
+  color: green;
+}
