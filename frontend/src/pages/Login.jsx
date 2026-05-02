@@ -1,48 +1,39 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+  });
+
   const [loading, setLoading] = useState(false);
 
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
   const handleLogin = async () => {
-    if (!email || !password) {
-      alert("Please enter email and password");
+    if (!form.email || !form.password) {
+      alert("Enter email & password");
       return;
     }
 
     try {
       setLoading(true);
 
-      const res = await API.post("/auth/login", {
-        email,
-        password,
-      });
+      const res = await API.post("/auth/login", form);
 
-      console.log("LOGIN RESPONSE:", res.data);
-
-      // ✅ Strong validation
-      if (!res.data || !res.data.token) {
-        alert("Login failed: Token not received");
-        return;
-      }
-
-      // ✅ Clean old data first
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-
-      // ✅ Store fresh data
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user || {}));
 
-      console.log("TOKEN SAVED:", localStorage.getItem("token"));
-
-      // ✅ FORCE reload (fixes blank screen issue)
-      window.location.href = "/dashboard";
-
+      navigate("/dashboard");
     } catch (err) {
-      console.error("LOGIN ERROR:", err);
       alert(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
@@ -52,31 +43,34 @@ export default function Login() {
   return (
     <div style={container}>
       <div style={card}>
-        <h2 style={{ marginBottom: 20 }}>Login</h2>
+        <h2 style={title}>Welcome Back</h2>
+        <p style={subtitle}>Login to continue</p>
 
         <input
           style={input}
-          type="email"
+          name="email"
           placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={handleChange}
         />
 
         <input
           style={input}
           type="password"
+          name="password"
           placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={handleChange}
         />
 
-        <button
-          style={button}
-          onClick={handleLogin}
-          disabled={loading}
-        >
+        <button style={button} onClick={handleLogin} disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
+
+        <p style={footer}>
+          Don't have an account?{" "}
+          <span style={link} onClick={() => navigate("/signup")}>
+            Signup
+          </span>
+        </p>
       </div>
     </div>
   );
@@ -89,31 +83,55 @@ const container = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  background: "#f4f6f8"
+  background: "linear-gradient(135deg, #667eea, #764ba2)",
 };
 
 const card = {
   background: "#fff",
-  padding: 30,
+  padding: "40px 30px",
   borderRadius: 12,
-  width: 300,
-  boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+  width: 320,
+  boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
   display: "flex",
   flexDirection: "column",
-  gap: 15
+  gap: 15,
+};
+
+const title = {
+  textAlign: "center",
+  marginBottom: 5,
+};
+
+const subtitle = {
+  textAlign: "center",
+  color: "#666",
+  marginBottom: 20,
 };
 
 const input = {
-  padding: 10,
-  borderRadius: 6,
-  border: "1px solid #ccc"
+  padding: 12,
+  borderRadius: 8,
+  border: "1px solid #ccc",
+  outline: "none",
 };
 
 const button = {
-  padding: 10,
-  background: "#333",
-  color: "#fff",
+  padding: 12,
+  borderRadius: 8,
   border: "none",
-  borderRadius: 6,
-  cursor: "pointer"
+  background: "#667eea",
+  color: "#fff",
+  fontWeight: "bold",
+  cursor: "pointer",
+};
+
+const footer = {
+  textAlign: "center",
+  fontSize: 14,
+};
+
+const link = {
+  color: "#667eea",
+  cursor: "pointer",
+  fontWeight: "bold",
 };

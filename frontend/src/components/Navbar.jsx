@@ -1,56 +1,85 @@
-import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "./Navbar.css";
+import { useNavigate, useLocation } from "react-router-dom";
 
-function Navbar() {
+export default function Navbar() {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const token = localStorage.getItem("token");
-
-  if (!token || token === "undefined" || token === "null") {
-    return null;
-  }
-
-  let user = {};
-  try {
-    user = JSON.parse(localStorage.getItem("user")) || {};
-  } catch {
-    user = {};
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  const logout = () => {
+    localStorage.clear();
     navigate("/login");
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <Link to="/dashboard" className="navbar-logo">
-          📋 Task Manager
-        </Link>
+    <div style={nav}>
+      <div style={logo}>TeamTaskManager</div>
 
-        <div className="navbar-menu">
-          <Link to="/dashboard" className="navbar-link">
-            Dashboard
-          </Link>
+      <div style={menu}>
+        <NavItem
+          label="Dashboard"
+          active={location.pathname === "/dashboard"}
+          onClick={() => navigate("/dashboard")}
+        />
 
-          <Link to="/projects" className="navbar-link">
-            Projects
-          </Link>
-
-          <span className="user-info">
-            Hello, {user.name || "User"}
-          </span>
-
-          <button onClick={handleLogout} className="logout-btn">
-            Logout
-          </button>
-        </div>
+        <NavItem
+          label="Projects"
+          active={location.pathname === "/projects"}
+          onClick={() => navigate("/projects")}
+        />
       </div>
-    </nav>
+
+      <button style={logoutBtn} onClick={logout}>
+        Logout
+      </button>
+    </div>
   );
 }
 
-export default Navbar;
+/* Nav Item */
+function NavItem({ label, active, onClick }) {
+  return (
+    <span
+      onClick={onClick}
+      style={{
+        ...navItem,
+        borderBottom: active ? "2px solid #fff" : "none",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+/* Styles */
+
+const nav = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "12px 30px",
+  background: "#333",
+  color: "#fff",
+};
+
+const logo = {
+  fontWeight: "bold",
+  fontSize: 18,
+};
+
+const menu = {
+  display: "flex",
+  gap: 20,
+};
+
+const navItem = {
+  cursor: "pointer",
+  paddingBottom: 4,
+};
+
+const logoutBtn = {
+  background: "#ff4d4d",
+  color: "#fff",
+  border: "none",
+  padding: "6px 12px",
+  borderRadius: 6,
+  cursor: "pointer",
+};

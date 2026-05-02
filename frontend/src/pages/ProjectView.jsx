@@ -2,143 +2,108 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 
 export default function ProjectView() {
-  const [projects, setProjects] = useState([]);
+  const [title, setTitle] = useState("");
   const [tasks, setTasks] = useState([]);
-  const [selectedProject, setSelectedProject] = useState("");
-  const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
-    fetchProjects();
+    fetchTasks();
   }, []);
 
-  const fetchProjects = async () => {
+  const fetchTasks = async () => {
     try {
-      const res = await API.get("/projects");
-
-      console.log("PROJECT API:", res.data);
-
-      // handle both possible response formats
-      const list = Array.isArray(res.data)
-        ? res.data
-        : res.data.projects || [];
-
-      setProjects(list);
-
-      if (list.length > 0) {
-        const firstProject = list[0]._id;
-        setSelectedProject(firstProject);
-        fetchTasks(firstProject);
-      }
-    } catch (err) {
-      console.error(err);
-      setProjects([]);
-    }
-  };
-
-  const fetchTasks = async (projectId) => {
-    try {
-      const res = await API.get(`/tasks/project/${projectId}`);
-
-      console.log("TASK API:", res.data);
-
-      setTasks(Array.isArray(res.data.tasks) ? res.data.tasks : []);
-    } catch (err) {
-      console.error(err);
+      const res = await API.get("/tasks");
+      setTasks(res.data || []);
+    } catch {
       setTasks([]);
     }
   };
 
-  const handleCreateTask = async () => {
-    if (!newTask || !selectedProject) return;
+  const createTask = async () => {
+    if (!title) {
+      alert("Enter task title");
+      return;
+    }
 
     try {
       await API.post("/tasks", {
-        title: newTask,
-        projectId: selectedProject,
+        title,
+        status: "To Do",
       });
 
-      setNewTask("");
-      fetchTasks(selectedProject);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleStatusChange = async (taskId, status) => {
-    try {
-      await API.put(`/tasks/${taskId}`, { status });
-      fetchTasks(selectedProject);
-    } catch (err) {
-      console.error(err);
+      setTitle("");
+      fetchTasks();
+    } catch {
+      alert("Failed to create task");
     }
   };
 
   return (
-    <div style={{ padding: 30 }}>
-      <h1>Projects</h1>
+    <div style={container}>
+      <h2>Create Task</h2>
 
-      {/* Project Dropdown */}
-      {projects.length > 0 ? (
-        <select
-          value={selectedProject}
-          onChange={(e) => {
-            setSelectedProject(e.target.value);
-            fetchTasks(e.target.value);
-          }}
-        >
-          {projects.map((p) => (
-            <option key={p._id} value={p._id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      ) : (
-        <p>No projects found</p>
-      )}
-
-      {/* Create Task */}
-      <div style={{ marginTop: 20 }}>
+      <div style={form}>
         <input
-          placeholder="New Task"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
+          style={input}
+          placeholder="Task title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
-        <button onClick={handleCreateTask}>Add Task</button>
+
+        <button style={button} onClick={createTask}>
+          Add Task
+        </button>
       </div>
 
-      {/* Task List */}
-      <div style={{ marginTop: 20 }}>
-        {tasks.length === 0 ? (
-          <p>No tasks</p>
-        ) : (
-          tasks.map((task) => (
-            <div
-              key={task._id}
-              style={{
-                padding: 10,
-                marginBottom: 10,
-                background: "#fff",
-                borderRadius: 6,
-              }}
-            >
-              <b>{task.title}</b>
+      <h3 style={{ marginTop: 30 }}>Tasks</h3>
 
-              <div>
-                <select
-                  value={task.status}
-                  onChange={(e) =>
-                    handleStatusChange(task._id, e.target.value)
-                  }
-                >
-                  <option>To Do</option>
-                  <option>In Progress</option>
-                  <option>Done</option>
-                </select>
-              </div>
-            </div>
-          ))
-        )}
+      <div style={list}>
+        {tasks.map((t) => (
+          <div key={t._id} style={card}>
+            {t.title} — {t.status}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+
+/* Styles */
+
+const container = {
+  padding: 40,
+};
+
+const form = {
+  display: "flex",
+  gap: 10,
+  marginTop: 20,
+};
+
+const input = {
+  padding: 10,
+  borderRadius: 6,
+  border: "1px solid #ccc",
+};
+
+const button = {
+  padding: "10px 15px",
+  background: "#667eea",
+  color: "#fff",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+};
+
+const list = {
+  marginTop: 20,
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+};
+
+const card = {
+  padding: 12,
+  background: "#fff",
+  borderRadius: 8,
+  boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+};

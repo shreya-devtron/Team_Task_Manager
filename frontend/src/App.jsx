@@ -7,9 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import ProjectView from "./pages/ProjectView";
 import Navbar from "./components/Navbar";
 
-import "./App.css";
-
-// ✅ Strong token check
+// ✅ Token check
 function isValidToken() {
   const token = localStorage.getItem("token");
   return token && token !== "undefined" && token !== "null";
@@ -25,10 +23,10 @@ function PublicRoute({ children }) {
   return isValidToken() ? <Navigate to="/dashboard" replace /> : children;
 }
 
-// ✅ Navbar control (hide on login/signup)
+// ✅ Layout
 function Layout({ children }) {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/login" || location.pathname === "/signup";
+  const hideNavbar = ["/login", "/signup"].includes(location.pathname);
 
   return (
     <>
@@ -43,64 +41,14 @@ export default function App() {
     <BrowserRouter>
       <Layout>
         <Routes>
-          <Route
-            path="/login"
-            element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
-            }
-          />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
 
-          <Route
-            path="/signup"
-            element={
-              <PublicRoute>
-                <Signup />
-              </PublicRoute>
-            }
-          />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/projects" element={<PrivateRoute><ProjectView /></PrivateRoute>} />
 
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/projects"
-            element={
-              <PrivateRoute>
-                <ProjectView />
-              </PrivateRoute>
-            }
-          />
-
-          {/* ✅ Default routes */}
-          <Route
-            path="/"
-            element={
-              isValidToken() ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-
-          <Route
-            path="*"
-            element={
-              isValidToken() ? (
-                <Navigate to="/dashboard" replace />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
+          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Layout>
     </BrowserRouter>

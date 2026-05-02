@@ -1,48 +1,55 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const taskSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-  },
-  project: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Project',
-    required: true,
-  },
-  assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
-  status: {
-    type: String,
-    enum: ['To Do', 'In Progress', 'Done'],
-    default: 'To Do',
-  },
-  priority: {
-    type: String,
-    enum: ['Low', 'Medium', 'High'],
-    default: 'Medium',
-  },
-  dueDate: {
-    type: Date,
-  },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+const taskSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-module.exports = mongoose.model('Task', taskSchema);
+    description: {
+      type: String,
+      default: "",
+    },
+
+    // ❗ OPTIONAL (fixed issue)
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+    },
+
+    assignedTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    status: {
+      type: String,
+      enum: ["To Do", "In Progress", "Done"],
+      default: "To Do",
+    },
+
+    priority: {
+      type: String,
+      enum: ["Low", "Medium", "High"],
+      default: "Medium",
+    },
+
+    dueDate: {
+      type: Date,
+    },
+
+    // ✅ REQUIRED (auto from backend controller)
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+module.exports = mongoose.model("Task", taskSchema);

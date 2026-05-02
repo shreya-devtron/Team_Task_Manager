@@ -1,80 +1,141 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { authAPI } from '../services/api';
-import './Auth.css';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import API from "../services/api";
 
-function Signup({ setIsAuthenticated }) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+export default function Signup() {
   const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSignup = async () => {
+    if (!form.name || !form.email || !form.password) {
+      alert("All fields are required");
+      return;
+    }
 
     try {
-      const response = await authAPI.signup(name, email, password);
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      setIsAuthenticated(true);
-      navigate('/dashboard');
+      setLoading(true);
+
+      const res = await API.post("/auth/signup", form);
+
+      console.log("SIGNUP RESPONSE:", res.data);
+
+      alert("Signup successful");
+
+      // redirect to login
+      navigate("/login");
+
     } catch (err) {
-      setError(err.response?.data?.message || 'Signup failed');
+      console.error("SIGNUP ERROR:", err);
+
+      alert(
+        err.response?.data?.message ||
+        "Signup failed. Try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h1>Sign Up</h1>
-        {error && <div className="error-box">{error}</div>}
-        <form onSubmit={handleSignup}>
-          <div className="form-group">
-            <label>Name</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              placeholder="Enter your name"
-            />
-          </div>
-          <div className="form-group">
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="Enter your email"
-            />
-          </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Enter a password"
-            />
-          </div>
-          <button type="submit" disabled={loading}>
-            {loading ? 'Signing up...' : 'Sign Up'}
-          </button>
-        </form>
-        <p className="auth-link">
-          Already have an account? <Link to="/login">Login</Link>
+    <div style={container}>
+      <div style={card}>
+        <h2 style={{ marginBottom: 20 }}>Signup</h2>
+
+        <input
+          style={input}
+          type="text"
+          name="name"
+          placeholder="Name"
+          value={form.name}
+          onChange={handleChange}
+        />
+
+        <input
+          style={input}
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={form.email}
+          onChange={handleChange}
+        />
+
+        <input
+          style={input}
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+        />
+
+        <button
+          style={button}
+          onClick={handleSignup}
+          disabled={loading}
+        >
+          {loading ? "Signing up..." : "Signup"}
+        </button>
+
+        <p style={{ marginTop: 10 }}>
+          Already have an account?{" "}
+          <span
+            style={{ color: "blue", cursor: "pointer" }}
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </span>
         </p>
       </div>
     </div>
   );
 }
 
-export default Signup;
+/* Styles */
+
+const container = {
+  height: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  background: "#f4f6f8",
+};
+
+const card = {
+  background: "#fff",
+  padding: 30,
+  borderRadius: 12,
+  width: 320,
+  boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
+  display: "flex",
+  flexDirection: "column",
+  gap: 15,
+};
+
+const input = {
+  padding: 10,
+  borderRadius: 6,
+  border: "1px solid #ccc",
+};
+
+const button = {
+  padding: 10,
+  background: "#333",
+  color: "#fff",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer",
+};
